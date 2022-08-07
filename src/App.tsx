@@ -32,7 +32,7 @@ import {
   Tooltip,
   Tr,
 } from '@chakra-ui/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Column,
   Table as ReactTable,
@@ -57,7 +57,6 @@ import {
   rankItem,
   compareItems,
 } from '@tanstack/match-sorter-utils';
-import usersRaw from './users.json';
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -67,9 +66,6 @@ import {
   SearchIcon,
 } from '@chakra-ui/icons';
 import { paginate } from './paginate';
-import ReactPaginate from 'react-paginate';
-
-const users = usersRaw.map((u) => ({ ...u, id: Number(u.id) }));
 
 interface User {
   createdAt: string;
@@ -150,12 +146,19 @@ function App() {
     ],
     []
   );
-  const [data, setData] = useState<User[]>(() => users);
+  const [data, setData] = useState<User[]>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 5,
   });
   const [columnVisibility, setColumnVisibility] = useState({});
+
+  useEffect(() => {
+    fetch('https://62bc0ffceff39ad5ee1b73ed.mockapi.io/api/int_dev/Student')
+      .then((res) => res.json())
+      .then((data: User[]) => data.map((u) => ({ ...u, id: Number(u.id) })))
+      .then(setData);
+  }, []);
 
   const table = useReactTable<User>({
     data,
@@ -186,7 +189,7 @@ function App() {
         <Box display='flex' alignItems='center' gap={5} mb={4}>
           <Box>{table.getPrePaginationRowModel().rows.length} Rows</Box>
           <Box>
-            <Popover>
+            <Popover placement='bottom-start'>
               <PopoverTrigger>
                 <Box
                   display='inline-flex'
@@ -357,7 +360,14 @@ function App() {
             </Tbody>
           </Table>
         </TableContainer>
-        <Box mt={5} display='flex' gap={3} alignItems='center'>
+        <Box
+          mt={6}
+          pb={10}
+          display='flex'
+          gap={3}
+          alignItems='center'
+          justifyContent='flex-end'
+        >
           <Box w={240} mb={-1}>
             <Select
               size='sm'
